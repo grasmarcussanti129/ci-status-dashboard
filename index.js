@@ -24,6 +24,11 @@ app.get('/api/statuses', (req, res) => {
   }
 });
 
+// Handle 404 errors for any unspecified routes
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not Found' });
+});
+
 // Start the server and listen on the specified PORT
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
