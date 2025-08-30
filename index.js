@@ -14,8 +14,14 @@ app.get('/', (req, res) => {
 
 // Endpoint to fetch pipeline statuses
 app.get('/api/statuses', (req, res) => {
-  // Placeholder for pipeline status logic
-  res.json({ message: 'Fetching pipeline statuses...' });
+  try {
+    // Placeholder for pipeline status logic
+    res.json({ message: 'Fetching pipeline statuses...' });
+  } catch (error) {
+    // Handle potential errors
+    console.error('Error fetching pipeline statuses:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
 // Start the server and listen on the specified PORT
