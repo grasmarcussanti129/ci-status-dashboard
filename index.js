@@ -24,6 +24,15 @@ app.get('/api/statuses', (req, res) => {
   }
 });
 
+// Handle JSON parsing errors
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    console.error('JSON Parsing Error:', err);
+    return res.status(400).json({ error: 'Invalid JSON' });
+  }
+  next();
+});
+
 // Handle 404 errors for any unspecified routes
 app.use((req, res) => {
   res.status(404).json({ error: 'Not Found' });
