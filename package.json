@@ -1,7 +1,7 @@
 {
   "name": "ci-status-dashboard",
   "version": "1.0.0",
-  "description": "A simple web application that provides real-time status updates for multiple CI/CD pipelines.",
+  "description": "A simple web application that provides real-time status updates for multiple CI/CD pipelines, ideal for DevOps teams.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -19,5 +19,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yourusername/ci-status-dashboard.git"
-  }
+  },
+  "keywords": ["CI/CD", "dashboard", "DevOps", "real-time"]
 }
