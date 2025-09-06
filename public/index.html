@@ -690,7 +690,7 @@
           <div class="repo-meta">
             Language: ${repo.language || 'Unknown'} | 
             Updated: ${new Date(repo.updatedAt).toLocaleDateString()}
-            <button onclick="loadAllCIStatus('${repo.fullName}', ${repo.id})" style="margin-left: 10px; padding: 5px 10px; background: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer;">Check All CI Status</button>
+            <button onclick="loadAllCIStatus('${repo.fullName}', ${repo.id})" style="margin-left: 10px; padding: 5px 10px; background: #ffc107; color: #212529; border: none; border-radius: 3px; cursor: pointer;">Check All CI Status</button>
           </div>
           <div id="actions-${repo.id}" class="actions-status"></div>
         `;
