@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import './App.css';
+const { useState, useEffect } = React;
 
 function App() {
   const [statuses, setStatuses] = useState([]);
@@ -23,4 +22,5 @@ function App() {
   );
 }
 
-export default App;
+// Render the app
+ReactDOM.render(<App />, document.getElementById('root'));

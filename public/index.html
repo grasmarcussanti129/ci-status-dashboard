@@ -4,9 +4,856 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CI Status Dashboard</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    .App {
+      text-align: center;
+      padding: 20px;
+    }
+    .status-item {
+      background: white;
+      margin: 10px 0;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .input-section {
+      margin: 20px 0;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+    }
+    .input-section input {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px;
+      width: 200px;
+    }
+    .info-section {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 5px;
+      padding: 15px;
+      margin: 20px 0;
+      text-align: left;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .info-section ol {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+    .info-section code {
+      background: #e9ecef;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+    .filter-section, .notification-section {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 5px;
+      padding: 15px;
+      margin: 20px 0;
+      text-align: left;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .filter-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .filter-controls select, .filter-controls button {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .filter-controls button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .filter-controls button:hover {
+      background: #0056b3;
+    }
+    .notification-section label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .platform-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-left: 5px;
+    }
+    .platform-github { background: #24292e; color: white; }
+    .platform-travis { background: #3eaaaf; color: white; }
+    .platform-jenkins { background: #d24939; color: white; }
+    
+    /* Pull Request Styles */
+    .pr-controls {
+      margin: 15px 0;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    .btn-primary, .btn-secondary {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn-primary {
+      background: #28a745;
+      color: white;
+    }
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+    .btn-primary:hover { background: #218838; }
+    .btn-secondary:hover { background: #5a6268; }
+    
+    .pr-item {
+      background: white;
+      margin: 10px 0;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-left: 4px solid #28a745;
+    }
+    .pr-item.draft {
+      border-left-color: #6c757d;
+    }
+    .pr-item.merged {
+      border-left-color: #6f42c1;
+    }
+    .pr-item.closed {
+      border-left-color: #dc3545;
+    }
+    
+    .pr-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+    .pr-title {
+      font-weight: bold;
+      font-size: 16px;
+      color: #24292e;
+      margin: 0;
+      flex: 1;
+    }
+    .pr-number {
+      color: #6a737d;
+      font-size: 14px;
+      margin-left: 10px;
+    }
+    
+    .pr-meta {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin: 10px 0;
+      font-size: 14px;
+      color: #6a737d;
+    }
+    .pr-author {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .pr-author-avatar {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+    }
+    .pr-branches {
+      font-family: monospace;
+      background: #f6f8fa;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    
+    .pr-labels {
+      display: flex;
+      gap: 5px;
+      margin: 10px 0;
+      flex-wrap: wrap;
+    }
+    .pr-label {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: white;
+    }
+    
+    .pr-assignees {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin: 10px 0;
+    }
+    .pr-assignee {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid white;
+      margin-left: -5px;
+    }
+    .pr-assignee:first-child {
+      margin-left: 0;
+    }
+    
+    .pr-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .pr-actions a {
+      padding: 6px 12px;
+      background: #f6f8fa;
+      color: #24292e;
+      text-decoration: none;
+      border-radius: 4px;
+      font-size: 12px;
+      border: 1px solid #d1d5da;
+    }
+    .pr-actions a:hover {
+      background: #e1e4e8;
+    }
+    
+    .pr-status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .status-open { background: #28a745; color: white; }
+    .status-draft { background: #6c757d; color: white; }
+    .status-closed { background: #dc3545; color: white; }
+    .status-merged { background: #6f42c1; color: white; }
+    .input-section button {
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .input-section button:hover {
+      background: #0056b3;
+    }
+    .repo-item {
+      background: white;
+      margin: 10px 0;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      text-align: left;
+    }
+    .repo-name {
+      font-weight: bold;
+      color: #007bff;
+      margin-bottom: 5px;
+    }
+    .repo-description {
+      color: #666;
+      margin-bottom: 10px;
+    }
+    .repo-meta {
+      font-size: 12px;
+      color: #888;
+    }
+    .actions-status {
+      margin-top: 10px;
+      padding: 5px 10px;
+      border-radius: 3px;
+      font-size: 12px;
+      display: inline-block;
+    }
+    .status-success { background: #d4edda; color: #155724; }
+    .status-failure { background: #f8d7da; color: #721c24; }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-running { background: #cce5ff; color: #004085; }
+  </style>
 </head>
 <body>
-  <div id="root"></div>
-  <script src="/index.js"></script>
+  <div id="root">
+    <div class="App">
+      <h1>CI Status Dashboard</h1>
+      
+      <!-- GitHub Username Input -->
+      <div class="input-section">
+        <input type="text" id="githubUsername" placeholder="Enter GitHub username" value="">
+        <input type="password" id="githubToken" placeholder="GitHub Token (optional, for private repos)" value="">
+        <input type="text" id="jenkinsUrl" placeholder="Jenkins URL (optional)" value="">
+        <button onclick="loadGitHubRepos()">Load Repositories</button>
+      </div>
+      
+      <!-- Filter Controls -->
+      <div class="filter-section">
+        <h3>Filters</h3>
+        <div class="filter-controls">
+          <select id="statusFilter">
+            <option value="">All Statuses</option>
+            <option value="success">Success</option>
+            <option value="failure">Failure</option>
+            <option value="in_progress">Running</option>
+            <option value="pending">Pending</option>
+          </select>
+          <select id="languageFilter">
+            <option value="">All Languages</option>
+            <option value="JavaScript">JavaScript</option>
+            <option value="Python">Python</option>
+            <option value="Java">Java</option>
+            <option value="TypeScript">TypeScript</option>
+            <option value="Go">Go</option>
+            <option value="C++">C++</option>
+          </select>
+          <select id="platformFilter">
+            <option value="">All Platforms</option>
+            <option value="GitHub Actions">GitHub Actions</option>
+            <option value="Travis CI">Travis CI</option>
+            <option value="Jenkins">Jenkins</option>
+          </select>
+          <button onclick="applyFilters()">Apply Filters</button>
+          <button onclick="clearFilters()">Clear Filters</button>
+        </div>
+      </div>
+      
+      <!-- Notification Settings -->
+      <div class="notification-section">
+        <h3>Notifications</h3>
+        <label>
+          <input type="checkbox" id="enableNotifications"> Enable browser notifications for failed builds
+        </label>
+        <button onclick="testNotification()">Test Notification</button>
+      </div>
+      
+      <!-- Info about GitHub Token -->
+      <div class="info-section">
+        <p><strong>To see private repositories:</strong></p>
+        <ol>
+          <li>Go to <a href="https://github.com/settings/tokens" target="_blank">GitHub Settings > Personal Access Tokens</a></li>
+          <li>Click "Generate new token (classic)"</li>
+          <li>Select scopes: <code>repo</code> (for private repos) and <code>workflow</code> (for Actions)</li>
+          <li>Copy the token and paste it above</li>
+        </ol>
+      </div>
+      
+      <!-- Loading indicator -->
+      <div id="loading" style="display: none;">
+        <div class="status-item">Loading repositories...</div>
+      </div>
+      
+      <!-- Pull Requests Section -->
+      <div id="pullRequests" style="display: none;">
+        <h2>Open Pull Requests</h2>
+        <div class="pr-controls">
+          <button onclick="loadAllPullRequests()" class="btn-primary">Load All PRs</button>
+          <button onclick="togglePRView()" class="btn-secondary">Toggle PR View</button>
+        </div>
+        <div id="prList"></div>
+      </div>
+      
+      <!-- Repositories List -->
+      <div id="repositories" style="display: none;">
+        <h2>Your GitHub Repositories</h2>
+        <div id="reposList"></div>
+      </div>
+      
+      <!-- Original status section -->
+      <div id="statuses">
+        <div class="status-item">Enter a GitHub username above to see your repositories and their CI/CD statuses</div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Version: 2.0 - Multi-platform CI support, filtering, notifications
+    console.log('CI Status Dashboard loaded - Version 2.0');
+    
+    // Global variables for filtering and notifications
+    let allRepositories = [];
+    let filteredRepositories = [];
+    let notificationPermission = false;
+    let allPullRequests = [];
+    let prViewVisible = true;
+    
+    // Function to load GitHub repositories
+    async function loadGitHubRepos() {
+      const username = document.getElementById('githubUsername').value.trim();
+      const token = document.getElementById('githubToken').value.trim();
+      
+      if (!username) {
+        alert('Please enter a GitHub username');
+        return;
+      }
+
+      // Show loading
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('repositories').style.display = 'none';
+
+      try {
+        // Fetch repositories
+        const url = token ? 
+          `/api/github/repos?username=${username}&token=${encodeURIComponent(token)}` :
+          `/api/github/repos?username=${username}`;
+        
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        // Store repositories globally for filtering
+        allRepositories = data.repositories;
+        filteredRepositories = [...allRepositories];
+        
+        // Display repositories
+        displayRepositories(filteredRepositories);
+        
+        // Hide loading, show repositories
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('repositories').style.display = 'block';
+        
+        // Request notification permission
+        requestNotificationPermission();
+        
+        // Show pull requests section
+        document.getElementById('pullRequests').style.display = 'block';
+
+      } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('repositories').innerHTML = `<div class="status-item">Error: ${error.message}</div>`;
+        document.getElementById('repositories').style.display = 'block';
+      }
+    }
+
+    // Function to display repositories
+    function displayRepositories(repos) {
+      const reposList = document.getElementById('reposList');
+      reposList.innerHTML = '';
+
+      repos.forEach(repo => {
+        const repoDiv = document.createElement('div');
+        repoDiv.className = 'repo-item';
+        repoDiv.innerHTML = `
+          <div class="repo-name">
+            <a href="${repo.url}" target="_blank">${repo.name}</a>
+          </div>
+          <div class="repo-description">${repo.description || 'No description'}</div>
+          <div class="repo-meta">
+            Language: ${repo.language || 'Unknown'} | 
+            Updated: ${new Date(repo.updatedAt).toLocaleDateString()}
+            <button onclick="loadActionsStatus('${repo.fullName}', ${repo.id})" style="margin-left: 10px; padding: 5px 10px; background: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer;">Check CI Status</button>
+          </div>
+          <div id="actions-${repo.id}" class="actions-status"></div>
+        `;
+        reposList.appendChild(repoDiv);
+      });
+    }
+
+    // Function to load GitHub Actions status
+    async function loadActionsStatus(fullName, repoId) {
+      console.log('Loading actions status for:', fullName, 'ID:', repoId);
+      const [owner, repo] = fullName.split('/');
+      const actionsDiv = document.getElementById(`actions-${repoId}`);
+      const token = document.getElementById('githubToken').value.trim();
+      
+      if (!actionsDiv) {
+        console.error('Actions div not found for ID:', repoId);
+        return;
+      }
+
+      // Show loading state
+      actionsDiv.innerHTML = '<span class="actions-status status-pending">Loading...</span>';
+      
+      try {
+        const url = token ? 
+          `/api/github/actions/${owner}/${repo}?token=${encodeURIComponent(token)}` :
+          `/api/github/actions/${owner}/${repo}`;
+        
+        console.log('Fetching from:', url);
+        const response = await fetch(url);
+        const data = await response.json();
+
+        console.log('Response data:', data);
+
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        if (data.runs && data.runs.length > 0) {
+          const latestRun = data.runs[0];
+          const statusClass = getStatusClass(latestRun.conclusion || latestRun.status);
+          actionsDiv.innerHTML = `
+            <span class="actions-status ${statusClass}">
+              ${latestRun.name} - ${latestRun.conclusion || latestRun.status}
+            </span>
+            <a href="${latestRun.url}" target="_blank" style="margin-left: 10px; color: #007bff;">View Details</a>
+          `;
+        } else {
+          actionsDiv.innerHTML = '<span class="actions-status status-pending">No recent runs found</span>';
+        }
+      } catch (error) {
+        console.error('Error loading actions:', error);
+        actionsDiv.innerHTML = `<span class="actions-status status-failure">Error: ${error.message}</span>`;
+      }
+    }
+
+    // Function to get CSS class for status
+    function getStatusClass(status) {
+      switch (status) {
+        case 'success': return 'status-success';
+        case 'failure': return 'status-failure';
+        case 'cancelled': return 'status-failure';
+        case 'in_progress': return 'status-running';
+        case 'queued': return 'status-pending';
+        default: return 'status-pending';
+      }
+    }
+
+    // Function to request notification permission
+    async function requestNotificationPermission() {
+      if ('Notification' in window) {
+        const permission = await Notification.requestPermission();
+        notificationPermission = permission === 'granted';
+        console.log('Notification permission:', permission);
+      }
+    }
+    
+    // Function to show notification
+    function showNotification(title, body, icon = null) {
+      if (notificationPermission && document.getElementById('enableNotifications').checked) {
+        new Notification(title, {
+          body: body,
+          icon: icon || '/favicon.ico'
+        });
+      }
+    }
+    
+    // Function to test notification
+    function testNotification() {
+      showNotification('Test Notification', 'This is a test notification from CI Status Dashboard');
+    }
+    
+    // Function to apply filters
+    function applyFilters() {
+      const statusFilter = document.getElementById('statusFilter').value;
+      const languageFilter = document.getElementById('languageFilter').value;
+      const platformFilter = document.getElementById('platformFilter').value;
+      
+      filteredRepositories = allRepositories.filter(repo => {
+        const statusMatch = !statusFilter || repo.ciStatus === statusFilter;
+        const languageMatch = !languageFilter || repo.language === languageFilter;
+        const platformMatch = !platformFilter || repo.platform === platformFilter;
+        
+        return statusMatch && languageMatch && platformMatch;
+      });
+      
+      displayRepositories(filteredRepositories);
+    }
+    
+    // Function to clear filters
+    function clearFilters() {
+      document.getElementById('statusFilter').value = '';
+      document.getElementById('languageFilter').value = '';
+      document.getElementById('platformFilter').value = '';
+      filteredRepositories = [...allRepositories];
+      displayRepositories(filteredRepositories);
+    }
+    
+    // Function to get platform badge class
+    function getPlatformBadgeClass(platform) {
+      switch (platform) {
+        case 'GitHub Actions': return 'platform-github';
+        case 'Travis CI': return 'platform-travis';
+        case 'Jenkins': return 'platform-jenkins';
+        default: return 'platform-github';
+      }
+    }
+    
+    // Function to load all CI statuses for a repository
+    async function loadAllCIStatus(fullName, repoId) {
+      console.log('Loading all CI statuses for:', fullName, 'ID:', repoId);
+      const [owner, repo] = fullName.split('/');
+      const actionsDiv = document.getElementById(`actions-${repoId}`);
+      const token = document.getElementById('githubToken').value.trim();
+      const jenkinsUrl = document.getElementById('jenkinsUrl').value.trim();
+      
+      if (!actionsDiv) {
+        console.error('Actions div not found for ID:', repoId);
+        return;
+      }
+
+      // Show loading state
+      actionsDiv.innerHTML = '<span class="actions-status status-pending">Loading all CI platforms...</span>';
+      
+      try {
+        const url = token ? 
+          `/api/ci-status/${owner}/${repo}?token=${encodeURIComponent(token)}${jenkinsUrl ? '&jenkinsUrl=' + encodeURIComponent(jenkinsUrl) : ''}` :
+          `/api/ci-status/${owner}/${repo}${jenkinsUrl ? '?jenkinsUrl=' + encodeURIComponent(jenkinsUrl) : ''}`;
+        
+        console.log('Fetching from:', url);
+        const response = await fetch(url);
+        const data = await response.json();
+
+        console.log('Response data:', data);
+
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        if (data.runs && data.runs.length > 0) {
+          let statusHTML = '<div style="margin-top: 10px;">';
+          
+          data.runs.forEach(run => {
+            const statusClass = getStatusClass(run.conclusion || run.status);
+            const platformClass = getPlatformBadgeClass(run.platform);
+            
+            statusHTML += `
+              <div style="margin: 5px 0; padding: 5px; background: #f8f9fa; border-radius: 3px;">
+                <span class="actions-status ${statusClass}">
+                  ${run.name} - ${run.conclusion || run.status}
+                </span>
+                <span class="platform-badge ${platformClass}">${run.platform}</span>
+                <a href="${run.url}" target="_blank" style="margin-left: 10px; color: #007bff; font-size: 12px;">View</a>
+              </div>
+            `;
+            
+            // Show notification for failed builds
+            if ((run.conclusion === 'failure' || run.status === 'failure') && notificationPermission) {
+              showNotification(
+                `Build Failed: ${run.name}`,
+                `${fullName} - ${run.platform}`,
+                null
+              );
+            }
+          });
+          
+          statusHTML += '</div>';
+          actionsDiv.innerHTML = statusHTML;
+        } else {
+          actionsDiv.innerHTML = '<span class="actions-status status-pending">No recent runs found</span>';
+        }
+      } catch (error) {
+        console.error('Error loading CI statuses:', error);
+        actionsDiv.innerHTML = `<span class="actions-status status-failure">Error: ${error.message}</span>`;
+      }
+    }
+    
+    // Update the displayRepositories function to include platform info
+    function displayRepositories(repos) {
+      const reposList = document.getElementById('reposList');
+      reposList.innerHTML = '';
+
+      repos.forEach(repo => {
+        const repoDiv = document.createElement('div');
+        repoDiv.className = 'repo-item';
+        repoDiv.innerHTML = `
+          <div class="repo-name">
+            <a href="${repo.url}" target="_blank">${repo.name}</a>
+          </div>
+          <div class="repo-description">${repo.description || 'No description'}</div>
+          <div class="repo-meta">
+            Language: ${repo.language || 'Unknown'} | 
+            Updated: ${new Date(repo.updatedAt).toLocaleDateString()}
+            <button onclick="loadAllCIStatus('${repo.fullName}', ${repo.id})" style="margin-left: 10px; padding: 5px 10px; background: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer;">Check All CI Status</button>
+          </div>
+          <div id="actions-${repo.id}" class="actions-status"></div>
+        `;
+        reposList.appendChild(repoDiv);
+      });
+    }
+
+    // Function to load all pull requests
+    async function loadAllPullRequests() {
+      const username = document.getElementById('githubUsername').value.trim();
+      const token = document.getElementById('githubToken').value.trim();
+      
+      if (!username) {
+        alert('Please enter a GitHub username first');
+        return;
+      }
+
+      const prList = document.getElementById('prList');
+      prList.innerHTML = '<div class="status-item">Loading pull requests...</div>';
+
+      try {
+        const url = token ? 
+          `/api/all-pull-requests?username=${username}&token=${encodeURIComponent(token)}` :
+          `/api/all-pull-requests?username=${username}`;
+        
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        allPullRequests = data.pullRequests;
+        displayPullRequests(allPullRequests);
+
+      } catch (error) {
+        console.error('Error loading pull requests:', error);
+        prList.innerHTML = `<div class="status-item">Error: ${error.message}</div>`;
+      }
+    }
+
+    // Function to display pull requests
+    function displayPullRequests(prs) {
+      const prList = document.getElementById('prList');
+      prList.innerHTML = '';
+
+      if (prs.length === 0) {
+        prList.innerHTML = '<div class="status-item">No open pull requests found</div>';
+        return;
+      }
+
+      prs.forEach(pr => {
+        const prDiv = document.createElement('div');
+        prDiv.className = `pr-item ${pr.state}${pr.draft ? ' draft' : ''}`;
+        
+        const statusClass = pr.draft ? 'draft' : pr.state;
+        const timeAgo = getTimeAgo(pr.createdAt);
+        
+        prDiv.innerHTML = `
+          <div class="pr-header">
+            <h3 class="pr-title">
+              <a href="${pr.url}" target="_blank" style="color: inherit; text-decoration: none;">
+                ${pr.title}
+              </a>
+              <span class="pr-number">#${pr.number}</span>
+            </h3>
+            <span class="pr-status-badge status-${statusClass}">${statusClass}</span>
+          </div>
+          
+          <div class="pr-meta">
+            <div class="pr-author">
+              <img src="${pr.author.avatar}" alt="${pr.author.login}" class="pr-author-avatar">
+              <a href="${pr.author.url}" target="_blank">${pr.author.login}</a>
+            </div>
+            <span>•</span>
+            <span>${timeAgo}</span>
+            <span>•</span>
+            <div class="pr-branches">
+              ${pr.headBranch} → ${pr.baseBranch}
+            </div>
+          </div>
+          
+          ${pr.labels.length > 0 ? `
+            <div class="pr-labels">
+              ${pr.labels.map(label => `
+                <span class="pr-label" style="background-color: #${label.color}">
+                  ${label.name}
+                </span>
+              `).join('')}
+            </div>
+          ` : ''}
+          
+          ${pr.assignees.length > 0 ? `
+            <div class="pr-assignees">
+              <span style="font-size: 12px; color: #6a737d;">Assigned to:</span>
+              ${pr.assignees.map(assignee => `
+                <img src="${assignee.avatar}" alt="${assignee.login}" class="pr-assignee" title="${assignee.login}">
+              `).join('')}
+            </div>
+          ` : ''}
+          
+          ${pr.requestedReviewers.length > 0 ? `
+            <div class="pr-assignees">
+              <span style="font-size: 12px; color: #6a737d;">Reviewers:</span>
+              ${pr.requestedReviewers.map(reviewer => `
+                <img src="${reviewer.avatar}" alt="${reviewer.login}" class="pr-assignee" title="${reviewer.login}">
+              `).join('')}
+            </div>
+          ` : ''}
+          
+          <div class="pr-actions">
+            <a href="${pr.url}" target="_blank">View on GitHub</a>
+            <a href="${pr.url}/files" target="_blank">View Changes</a>
+            ${pr.repository ? `<a href="${pr.repository.url}" target="_blank">${pr.repository.name}</a>` : ''}
+          </div>
+        `;
+        
+        prList.appendChild(prDiv);
+      });
+    }
+
+    // Function to toggle PR view visibility
+    function togglePRView() {
+      const prSection = document.getElementById('pullRequests');
+      prViewVisible = !prViewVisible;
+      
+      if (prViewVisible) {
+        prSection.style.display = 'block';
+        document.querySelector('.btn-secondary').textContent = 'Hide PR View';
+      } else {
+        prSection.style.display = 'none';
+        document.querySelector('.btn-secondary').textContent = 'Show PR View';
+      }
+    }
+
+    // Function to get time ago string
+    function getTimeAgo(dateString) {
+      const now = new Date();
+      const date = new Date(dateString);
+      const diffInSeconds = Math.floor((now - date) / 1000);
+      
+      if (diffInSeconds < 60) return 'just now';
+      if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+      if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+      if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+      return date.toLocaleDateString();
+    }
+
+    // Load initial status
+    fetch('/api/statuses')
+      .then(response => response.json())
+      .then(data => {
+        const statusesDiv = document.getElementById('statuses');
+        if (data.message) {
+          statusesDiv.innerHTML = `<div class="status-item">${data.message}</div>`;
+        } else {
+          statusesDiv.innerHTML = '<div class="status-item">No status data available</div>';
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('statuses').innerHTML = '<div class="status-item">Error loading statuses</div>';
+      });
+  </script>
 </body>
 </html>
